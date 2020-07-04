@@ -33,9 +33,6 @@ class ProductCategory extends Component {
         this.setState({ isEditProductCat: false });
     }
     onFormSubmit(data) {
-        this.setState({ isAddProductCat: false });
-        this.setState({ isEditProductCat: false });
-        this.setState({ isProductCatListing: true });
 
         if (this.state.isEditProductCat) {
 
@@ -44,6 +41,7 @@ class ProductCategory extends Component {
                     response: result,
                     isAddProductCat: false,
                     isEditProductCat: false,
+                    isProductCatListing: true
                 })
             });
         }

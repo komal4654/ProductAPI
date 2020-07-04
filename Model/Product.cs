@@ -20,6 +20,9 @@ namespace ProductAPIDemo.Model
         public int? ProductCategoryID { get; set; }
 
         [NotMapped]
+        public string Categories { get; set; }
+
+        [NotMapped]
         public List<ProductCategoryMapping> strCategory { get; set; }
 
         [NotMapped]
@@ -30,5 +33,7 @@ namespace ProductAPIDemo.Model
         public bool? Active { get; set; }
 
         public string Description { get; set; }
+
+        public List<ProductCategoryMapping> ProductCategoryMapping { get; set; }
     }
 }

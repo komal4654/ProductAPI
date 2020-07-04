@@ -8,7 +8,7 @@ class AddProductCategory extends React.Component {
         this.initialState = {
             categoryName: '',
             description: '',
-            active: '',
+            active: true,
             errors: {}
         }
        
@@ -45,9 +45,11 @@ class AddProductCategory extends React.Component {
     }
 
     handleChangeActive(event) {
-        const value = event.target.value;
+        alert("dff");
+        alert(event.target.value);
+        const value = event.target.value === "true" ? true : false;
         this.setState({
-            active: value 
+            active: value
         });
     }
 
@@ -71,7 +73,7 @@ class AddProductCategory extends React.Component {
                     <h2>{pageTitle}</h2>
                     <Row>
                         <Col sm={5}>
-                            <Form onSubmit={this.handleSubmit} onLoad={this.onLoad}>
+                            <Form onSubmit={this.handleSubmit}>
                                 <Form.Group controlId="CategoryName">
                                     <Form.Label>Product Category</Form.Label>
                                     <Form.Control

@@ -30,11 +30,20 @@ namespace ProductAPIDemo.Controllers
         {
             try
             {
-                var productListing = _service.GetProductList();
-                if (productListing == null)
-                {
-                    // return NotFound();
-                }
+                var productListing = new List<Product>();
+                //if (string.IsNullOrEmpty(filter))
+                //{
+                    productListing = _service.GetProductList();
+                    if (productListing == null)
+                    {
+                        // return NotFound();
+                    }
+                //}
+                //else
+                //{
+                //    productListing = _service.SearchProduct(filter);
+
+                //}
                 return productListing.AsQueryable();
                 // return Ok(productListing);
             }
@@ -74,7 +83,7 @@ namespace ProductAPIDemo.Controllers
                 {
                     return NotFound();
                 }
-                return Ok();
+                return Ok(data);
             }
             catch (Exception ex)
             {
@@ -95,6 +104,7 @@ namespace ProductAPIDemo.Controllers
                 else
                 {
                     var productListing = await _service.GetProductListByID(id);
+                    productListing.Category = GetProductCategory();
                     return Ok(productListing);
 
                 }
@@ -120,7 +130,7 @@ namespace ProductAPIDemo.Controllers
                 {
                     return NotFound();
                 }
-                return Ok();
+                return Ok(data);
             }
             catch (Exception ex)
             {
@@ -149,18 +159,34 @@ namespace ProductAPIDemo.Controllers
         }
 
 
-        [HttpPost("SearchProduct")]
-        public ActionResult<List<Product>> SearchProduct(string filter)
+        //[HttpGet("SearchProduct/{filter}")]
+        //public ActionResult<List<Product>> SearchProduct(string filter)
+        //{
+        //    var query = new List<Product>();
+        //    try
+        //    {
+        //        query = _service.SearchProduct(filter);
+        //        if (query == null || query.Count==0)
+        //        {
+        //            return Ok();
+        //        }
+        //        return Ok(query);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
+
+        [HttpPost]
+        [Route("SearchProduct")]
+        public IQueryable<Product> SearchProduct([FromBody]Product data)
         {
             var query = new List<Product>();
             try
             {
-                query = _service.SearchProduct(filter);
-                if (query == null)
-                {
-                    return NotFound();
-                }
-                return Ok(query);
+                query = _service.SearchProduct(data.ProductName);
+               return query.AsQueryable();
             }
             catch (Exception ex)
             {
@@ -169,14 +195,14 @@ namespace ProductAPIDemo.Controllers
         }
         [HttpGet]
         [Route("GetProductCategory")]
-        public IEnumerable<ProductCategory> GetProductCategory()
+        public List<ProductCategory> GetProductCategory()
         {
             var query = (from p in _entities.ProductCategory
                          select new ProductCategory
                          {
                              ID=p.ID,
                              CategoryName=p.CategoryName
-                         }).AsEnumerable();
+                         }).ToList();
             return query;
         }
     }

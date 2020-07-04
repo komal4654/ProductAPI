@@ -44,19 +44,43 @@ namespace ProductAPIDemo.Controllers
             }
         }
 
-
-
-        [HttpGet("GetProductCategoryListById/{id}")]
-        public async Task<ActionResult<ProductCategory>> GetProductCategoryListById(int? id)
+        [HttpPost]
+        [Route("SearchProductCategory")]
+        public IQueryable<ProductCategory> SearchProduct([FromBody]ProductCategory data)
         {
-            var productCategory = await _context.ProductCategory.FindAsync(id);
-            if (productCategory == null)
+            var query = new List<ProductCategory>();
+            try
             {
-                return NotFound();
+                query = _service.SearchProductCategory(data.CategoryName);
+                return query.AsQueryable();
             }
-            return productCategory;
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
+        [HttpGet("GetProductCategoryListById/{id}")]
+        public async Task<IActionResult> GetProductCategoryListById(int? id)
+        {
+            try
+            {
+                if (id == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    var productListing = await _service.GetProductCategoryListByID(id);
+                    return Ok(productListing);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
         [HttpPost]
         [Route("UpdateProductCategory")]

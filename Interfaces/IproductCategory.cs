@@ -15,5 +15,9 @@ namespace ProductAPIDemo.Interfaces
         Task<int> UpdateProductCat(int id, ProductCategory objProductCat);
 
         Task<int> DeleteProductCat(int? id);
+
+        public List<ProductCategory> SearchProductCategory(string filter);
+
+        Task<ProductCategory> GetProductCategoryListByID(int? id);
     }
 }

@@ -21,14 +21,42 @@ namespace ProductAPIDemo.Class
 
         public List<Product> GetProductList()
         {
-            _products = (from p in _entities.Product select p).ToList();
+            var Listing = (from s in _entities.ProductCategoryMapping
+                           select new ProductCategoryMapping { CategoryID = s.CategoryID,ProductID=s.ProductID });
+            _products = (from p in _entities.Product
+                         select new Product
+                         {
+                             ProductName = p.ProductName,
+                             ID = p.ID,
+                             Description = p.Description,
+                             Cost = p.Cost,
+                             Active = p.Active,
+
+                             Categories = string.Join(",",(from q in _entities.ProductCategory
+                                           join l in Listing on q.ID equals l.CategoryID
+                                           where l.ProductID==p.ID
+                                           select q.CategoryName).ToList()),
+                             strCategory = (Listing.Where(x => x.ProductID == p.ID).Select(y => new ProductCategoryMapping { CategoryID = y.CategoryID })).ToList()
+                         }).ToList();
             return _products;
         }
 
         public async Task<Product> GetProductListByID(int? id)
         {
-            var products=await _entities.Product.Where(x => x.ID == id).Select(y => y).FirstOrDefaultAsync();
-            return products;
+            var Listing = (from s in _entities.ProductCategoryMapping select new ProductCategoryMapping { CategoryID = s.CategoryID, ProductID = s.ProductID });
+            var products = (from p in _entities.Product
+                            where p.ID == id
+                            select new Product
+                            {
+                                ID = p.ID,
+                                ProductName = p.ProductName,
+                                Description = p.Description,
+                                Cost = p.Cost,
+                                Active = p.Active,
+                                strCategory = (Listing.Where(x => x.ProductID == p.ID).Select(y => new ProductCategoryMapping { CategoryID = y.CategoryID })).ToList()
+                            }).FirstOrDefaultAsync();
+            var prodListing = await products;
+            return prodListing;
         }
 
         
@@ -38,9 +66,22 @@ namespace ProductAPIDemo.Class
             {
                 if (_entities != null)
                 {
-                    await _entities.Product.AddAsync(objProduct);
+                    Product prod = new Product();
+                    prod.ProductName = objProduct.ProductName;
+                    prod.Description = objProduct.Description;
+                    prod.Cost= objProduct.Cost;
+                    prod.Active = objProduct.Active;
+                    prod.ProductCategoryMapping = new List<ProductCategoryMapping>();
+                    foreach(var item in objProduct.strCategory)
+                    {
+                        ProductCategoryMapping obj = new ProductCategoryMapping();
+                        obj.CategoryID = item.CategoryID;
+                        obj.ProductID = prod.ID;
+                        prod.ProductCategoryMapping.Add(obj);
+                    }
+                    _entities.Product.Add(prod);
                     await _entities.SaveChangesAsync();
-                    return objProduct.ID;
+                    return prod.ID;
                 }
                 return 0;
             }
@@ -57,7 +98,20 @@ namespace ProductAPIDemo.Class
                 int result = 0;
                 if (_entities != null)
                 {
-                    _entities.Product.Update(objProduct);
+                    var deleteMapping = (from p in _entities.ProductCategoryMapping where p.ProductID == objProduct.ID select p);
+
+                    foreach(var item in deleteMapping)
+                    {
+                        _entities.ProductCategoryMapping.Remove(item);
+                    }
+                    foreach (var item in objProduct.strCategory)
+                    {
+                        ProductCategoryMapping obj = new ProductCategoryMapping();
+                        obj.CategoryID = item.CategoryID;
+                        obj.ProductID = objProduct.ID;
+                       _entities.ProductCategoryMapping.Add(obj);
+                    }
+                   _entities.Product.Update(objProduct);
                    result= await _entities.SaveChangesAsync();
                     return result;
                 }
@@ -79,6 +133,11 @@ namespace ProductAPIDemo.Class
                     var productListing = await _entities.Product.FirstOrDefaultAsync(x => x.ID == id);
                     if (productListing != null)
                     {
+                        var isMappingExists = (from s in _entities.ProductCategoryMapping where s.ProductID == id select s);
+                        foreach(var item in isMappingExists)
+                        {
+                            _entities.ProductCategoryMapping.Remove(item);
+                        }
                         _entities.Product.Remove(productListing);
                         result=await _entities.SaveChangesAsync();
                     }
@@ -98,12 +157,28 @@ namespace ProductAPIDemo.Class
             {
                 try
                 {
+                    var Listing = (from s in _entities.ProductCategoryMapping
+                                   select new ProductCategoryMapping { CategoryID = s.CategoryID, ProductID = s.ProductID });
                     listing = (from p in _entities.Product
-                                   join q in _entities.ProductCategory
-                                   on p.ProductCategoryID equals q.ID into g
-                               from gdataAll in g.DefaultIfEmpty()
-                               where p.ProductName.Contains(filter) || gdataAll.CategoryName.Contains(filter)
-                               select p).ToList();
+                               join q in _entities.ProductCategoryMapping
+                               on p.ID equals q.ProductID
+                               join s in _entities.ProductCategory
+                               on q.CategoryID equals s.ID
+                               where p.ProductName.ToLower().Contains(filter.ToLower()) || s.CategoryName.ToLower().Contains(filter.ToLower())
+                               select new Product
+                               {
+                                   ProductName = p.ProductName,
+                                   ID = p.ID,
+                                   Description = p.Description,
+                                   Cost = p.Cost,
+                                   Active = p.Active,
+                                   Categories = string.Join(",", (from q in _entities.ProductCategory
+                                                                  join l in Listing on q.ID equals l.CategoryID
+                                                                  where l.ProductID == p.ID
+                                                                  select q.CategoryName).ToList()),
+                                   strCategory = (Listing.Where(x => x.ProductID == p.ID).Select(y => new ProductCategoryMapping { CategoryID = y.CategoryID })).ToList()
+
+                               }).ToList();
                     return listing;
                 }
                 catch (Exception ex)

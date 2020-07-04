@@ -1,7 +1,6 @@
 ﻿import React, { Component } from 'react';
-import { Table, Button } from 'react-bootstrap';
+import { Table, Button ,Form} from 'react-bootstrap';
 import axios from 'axios';
-import { Form } from 'reactstrap';
 const apiUrl = "https://localhost:44354/api/ProductCategories";
 
 
@@ -13,6 +12,7 @@ class ProductCategoryList extends Component {
             productsCategory: [],
             response: {}
         }
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
     componentDidMount() {
         axios.get(apiUrl + '/GetProductCategoryListing')
@@ -28,14 +28,42 @@ class ProductCategoryList extends Component {
             )
     }
 
+    onFormSubmit(data) {
+        axios.post(apiUrl + '/SearchProductCategory', data).then(response => response.data).then(
+            (result) => {
+                this.setState({
+                    productsCategory: result
+                });
+            });
+    }
+    handleChange(event) {
+        const name = event.target.name;
+        const value = event.target.value;
+
+        this.setState({
+            [name]: value
+        });
+    }
+    handleSubmit(event) {
+        event.preventDefault();
+        this.onFormSubmit(this.state);
+        this.setState(this.state);
+    }
     deleteProductCat(id) {
         const { productsCategory } = this.state;
-        fetch(apiUrl + '/DeleteProductsCategory/' + id, { method: 'post' }).then(result => {
-            this.setState({
-                response: result,
-                productsCategory: productsCategory.filter(prod => prod.id !== id)
-            });
-        });
+        fetch(apiUrl + '/DeleteProductsCategory/' + id, { method: 'post' })
+            .then(response => response.data).then(
+                (result) => {
+                    this.setState({
+                        response: result,
+                        productsCategory: productsCategory
+                      //  isProductCatListing:true
+                    });
+                },
+                (error) => {
+                    this.setState({ error });
+                }
+            );
     }
 
     render() {
@@ -49,6 +77,22 @@ class ProductCategoryList extends Component {
         else {
             return (
                 <div>
+                    <Form onSubmit={this.handleSubmit}>
+                        <Form.Group controlId="CategoryName">
+                            <Form.Label>Category Name</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="categoryName"
+                                value={this.state.categoryName}
+                                onChange={e => this.handleChange(e)}
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Button variant="success" type="submit">Search</Button>
+
+                        </Form.Group>
+                    </Form>
+
                     <Table>
                         <thead className="btn-primary">
                             <tr>

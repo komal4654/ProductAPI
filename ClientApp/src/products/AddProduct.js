@@ -1,5 +1,6 @@
 ﻿import React from 'react';
 import select from 'react-select';
+import ReactDOM from 'react-dom';
 import { Row, Form, Col, Button } from 'react-bootstrap';
 import axios from 'axios';
 const apiUrl = "https://localhost:44354/api/Product/";
@@ -11,7 +12,7 @@ class AddProduct extends React.Component {
             description: '',
             cost: '',
             category: [],
-            active: '',
+            active: true,
             categoryIDs: '',
             strCategory: [],
             errors:{}
@@ -42,16 +43,38 @@ class AddProduct extends React.Component {
     }
 
     handleChangeDDL(event) {
-        this.setState({ categoryIDs: event.target.value });
-        const strCategory = (this.state.strCategory);
-        strCategory.push({ 'categoryID': event.target.value });
+        var options = event.target.options;
+        var strCategory = [];
+        for (var s = 0; s < options.length; s++) {
+            if (options[s].selected) {
+                strCategory.push({ 'categoryID': options[s].value });
+            }
+        }
         this.setState({ strCategory: strCategory });
-        console.log(JSON.stringify(strCategory));
-
     }
 
+    //handleChangeDDL(event) {
+    //    var options = event.target.options;
+    //    alert(options);
+    //    var value = [];
+    //    for (var s = 0; s < options.length; s++) {
+    //        if (options[s].selected) {
+    //            value.push(options[s].value);
+    //        } else {
+    //            alert("No");
+    //        }
+
+    //    }
+    //    this.setState({ categoryIDs: event.target.value });
+    //    const strCategory = (this.state.strCategory);
+    //    strCategory.push({ 'categoryID': event.target.value });
+    //    this.setState({ strCategory: strCategory });
+    //    console.log(JSON.stringify(strCategory));
+
+    //}
+
     handleChangeActive(event) {
-        const value = event.target.value;
+        const value = event.target.value === "true" ? true : false;
         this.setState({
             active: value
         });
@@ -68,6 +91,11 @@ class AddProduct extends React.Component {
         if (!fields["cost"]) {
             formIsValid = false;
             errors["cost"] = "Cost is required";
+        }
+
+        if (fields["strCategory"].length==0) {
+            formIsValid = false;
+            errors["category"] = "Category is required";
         }
 
         this.setState({ errors: errors });
@@ -92,7 +120,7 @@ class AddProduct extends React.Component {
                 <h2>{pageTitle}</h2>
                 <Row>
                     <Col sm={5}>
-                        <Form onSubmit={this.handleSubmit} onLoad={this.onLoad}>
+                        <Form onSubmit={this.handleSubmit}>
                             <Form.Group controlId="ProductName">
                                 <Form.Label>Product Name</Form.Label>
                                 <Form.Control
@@ -130,6 +158,7 @@ class AddProduct extends React.Component {
                                         <option key={i} value={v.id}>{v.categoryName}</option>
                                     )}
                                 </select>
+                                <span style={{ color: "red" }}>{this.state.errors["category"]}</span>
                             </Form.Group>
                             <Form.Group controlId="active">
                                 <Form.Label>Active</Form.Label>

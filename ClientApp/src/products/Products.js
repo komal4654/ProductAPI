@@ -1,5 +1,5 @@
 ﻿import React, { Component } from 'react';
-import { Container, Button } from 'react-bootstrap';
+import { Container, Button,Form } from 'react-bootstrap';
 import ProductList from './ProductListing';
 import AddProduct from './AddProduct';
 import EditProduct from './EditProduct';
@@ -14,13 +14,18 @@ class ProductApp extends Component {
         this.state = {
             isAddProduct: false,
             isEditProduct: false,
+            isSearchProduct:false,
             isProductListing: true,
             error: null,
             response: {},
             products: {},
+            strCategory: [],
         }
         this.onFormSubmit = this.onFormSubmit.bind(this);
+
     }
+    
+
     onAdd() {
         this.setState({ isAddProduct: true });
         this.setState({ isEditProduct: false });
@@ -32,17 +37,13 @@ class ProductApp extends Component {
         this.setState({ isEditProduct: false });
     }
     onFormSubmit(data) {
-        this.setState({ isAddProduct: false });
-        this.setState({ isEditProduct: false });
-        this.setState({ isProductListing: true });
-
         if (this.state.isEditProduct) {
-
             axios.post(apiUrl + 'UpdateProducts', data).then(result => {
                 this.setState({
                     response: result,
+                    isProductListing: true,
                     isAddProduct: false,
-                    isEditProduct: false,
+                    isEditProduct: false
                 })
             });
         }
@@ -50,14 +51,13 @@ class ProductApp extends Component {
             axios.post(apiUrl + 'AddProducts', data).then(result => {
                 this.setState({
                     response: result,
+                    isProductListing: true,
                     isAddProduct: false,
-                    isEditProduct: false,
-                    isProductListing: true
+                    isEditProduct:false
                 })
             });
            
         }
-
     }
 
     editProduct = id => {
@@ -70,6 +70,7 @@ class ProductApp extends Component {
             return response.json();
         })
             .then(response => {
+                debugger;
                 this.setState({
                     isAddProduct: false,
                     isEditProduct: true,
@@ -82,7 +83,7 @@ class ProductApp extends Component {
             )
     }
     render() {
-
+        
         let userForm;
             if (this.state.isAddProduct) {
                 userForm = <AddProduct onFormSubmit={this.onFormSubmit} products={this.state.products} />
@@ -93,6 +94,7 @@ class ProductApp extends Component {
         return (
             <div className="App">
                 <Container>
+                  
                     <h1 style={{ textAlign: 'center' }}>Product Listing</h1>
                     <hr></hr>
                     {!this.state.isProductListing && <Button variant="primary" onClick={() => this.onDetails()}> Product Details</Button>}

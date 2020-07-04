@@ -50,7 +50,7 @@ class EditProductCategory extends React.Component {
     }
 
     handleChangeActive(event) {
-        const value = event.target.value;
+        const value = event.target.value === "true" ? true : false;
         this.setState({
             active: value
         });
@@ -75,7 +75,7 @@ class EditProductCategory extends React.Component {
                     <h2>{pageTitle}</h2>
                     <Row>
                         <Col sm={5}>
-                            <Form onSubmit={this.handleSubmit} onLoad={this.onLoad}>
+                            <Form onSubmit={this.handleSubmit}>
                                 <Form.Group controlId="CategoryName">
                                     <Form.Label>Product Category</Form.Label>
                                     <Form.Control
@@ -95,7 +95,16 @@ class EditProductCategory extends React.Component {
                                         placeholder="Description" />
                                 </Form.Group>
                                     <Form.Group controlId="active">
-                                        <Form.Label>Active</Form.Label>
+                                    <Form.Label>Active</Form.Label>
+                                    <Form.Check
+                                        inline
+                                        label="Yes"
+                                        name="Active"
+                                        value={true}
+                                        type="radio"
+                                        checked={this.state.active === true}
+                                        onChange={this.handleChangeActive}
+                                    />
                                         <Form.Check
                                         inline
                                         name="Active"
@@ -105,15 +114,7 @@ class EditProductCategory extends React.Component {
                                         checked={this.state.active===false}
                                             onChange={this.handleChangeActive}
                                         />
-                                        <Form.Check
-                                        inline
-                                        label="Yes"
-                                        name="Active"
-                                        value={true}
-                                        type="radio"
-                                        checked={this.state.active===true}
-                                            onChange={this.handleChangeActive}
-                                        />
+                                       
                                     </Form.Group>
                                 <Form.Group>
                                     <Form.Control type="hidden" name="id" value={this.state.id} />

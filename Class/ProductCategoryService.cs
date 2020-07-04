@@ -20,8 +20,22 @@ namespace ProductAPIDemo.Class
             {
                 _entities = db;
             }
+        public async Task<ProductCategory> GetProductCategoryListByID(int? id)
+        {
+            var products = (from p in _entities.ProductCategory
+                            where p.ID == id
+                            select new ProductCategory
+                            {
+                                ID = p.ID,
+                                CategoryName = p.CategoryName,
+                                Description = p.Description,
+                                Active = p.Active,
+                            }).FirstOrDefaultAsync();
+            var prodListing = await products;
+            return prodListing;
+        }
 
-            public List<ProductCategory> GetProductCatList()
+        public List<ProductCategory> GetProductCatList()
             {
                 _products = (from p in _entities.ProductCategory select p).ToList();
                 return _products;
@@ -73,8 +87,12 @@ namespace ProductAPIDemo.Class
                         var productCatListing = await _entities.ProductCategory.FirstOrDefaultAsync(x => x.ID == id);
                         if (productCatListing != null)
                         {
+                        var productListing = (from p in _entities.ProductCategoryMapping where p.CategoryID == id select p).Count();
+                        if (productListing == 0)
+                        {
                             _entities.ProductCategory.Remove(productCatListing);
                             result = await _entities.SaveChangesAsync();
+                        }
                         }
                         return result;
                     }
@@ -85,7 +103,7 @@ namespace ProductAPIDemo.Class
                 }
                 return result;
             }
-        public List<ProductCategory> SearchProductCat(string filter)
+        public List<ProductCategory> SearchProductCategory(string filter)
         {
             var listing = new List<ProductCategory>();
             if (_entities != null)
@@ -93,7 +111,7 @@ namespace ProductAPIDemo.Class
                 try
                 {
                     listing = (from p in _entities.ProductCategory
-                               where p.CategoryName.Contains(filter)
+                               where p.CategoryName.ToLower().Contains(filter.ToLower())
                                select p).ToList();
                     return listing;
                 }

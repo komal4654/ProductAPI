@@ -10,11 +10,10 @@ class EditProduct extends React.Component {
             productName: '',
             description: '',
             cost: '',
-            category: [],
             active: '',
             categoryIDs: '',
             strCategory: [],
-            errors: {}
+            errors: {},
         }
         if (props.products.id) {
             this.state = props.products
@@ -28,16 +27,9 @@ class EditProduct extends React.Component {
         this.handleChangeActive = this.handleChangeActive.bind(this);
     }
   
-    componentDidMount() {
-        fetch(apiUrl + 'GetProductCategory')
-            .then(response => response.json())
-            .then(data => {
-                this.setState({ category: data });
-            });
-    }
-
+  
     handleChangeActive(event) {
-        const value = event.target.value;
+        const value = event.target.value==="true"?true:false;
         this.setState({
             active: value
         });
@@ -65,19 +57,26 @@ class EditProduct extends React.Component {
             formIsValid = false;
             errors["cost"] = "Cost is required";
         }
-
+        if (fields["strCategory"].length == 0) {
+            formIsValid = false;
+            errors["category"] = "Category is required";
+        }
         this.setState({ errors: errors });
         return formIsValid;
 
     }
     handleChangeDDL(event) {
-        this.setState({ categoryIDs: event.target.value });
-        const strCategory = (this.state.strCategory);
-        strCategory.push(this.state.categoryIDs);
+        var options = event.target.options;
+        var strCategory = [];
+        for (var s = 0; s < options.length; s++) {
+            if (options[s].selected) {
+                strCategory.push({ 'categoryID': options[s].value });
+            }
+        }
         this.setState({ strCategory: strCategory });
-
     }
-    
+
+
 
     handleSubmit(event) {
         event.preventDefault();
@@ -92,13 +91,17 @@ class EditProduct extends React.Component {
         let actionStatus;
         pageTitle = "Edit Product"
         actionStatus = <b>Update</b>
-       
+        const str = this.state.strCategory;
+        var val = [];
+        this.state.strCategory.map((item, key) =>
+            val.push(item.categoryID)
+        );
         return (
             <div>
                 <h2>{pageTitle}</h2>
                 <Row>
                     <Col sm={5}>
-                        <Form onSubmit={this.handleSubmit} onLoad={this.onLoad}>
+                        <Form onSubmit={this.handleSubmit}>
                             <Form.Group controlId="ProductName">
                                 <Form.Label>Product Name</Form.Label>
                                 <Form.Control
@@ -126,22 +129,32 @@ class EditProduct extends React.Component {
                                     onChange={this.handleChange}
                                     placeholder="Cost" />
                             </Form.Group>
-                     
+                            <Form.Group>
+                                <Form.Label>Category</Form.Label>
+                                <select className="form-control" data-val="true" multiple={true} onChange={this.handleChangeDDL} defaultValue={val} >
+                                    <option value="">-- Select Category --</option>
+                                    {this.state.category.map((v, i) =>
+                                        <option key={i} value={v.id}> {v.categoryName}</option>
+                                    )}
+                                </select>
+                            </Form.Group>
                             <Form.Group controlId="active">
                                 <Form.Label>Active</Form.Label>
                                 <Form.Check
                                     inline
+                                    checked={this.state.active === true}
+                                    label="Yes"
                                     name="Active"
-                                    value="false"
-                                    label="No"
+                                    value="true"
                                     type="radio"
                                     onChange={this.handleChangeActive}
                                 />
                                 <Form.Check
                                     inline
-                                    label="Yes"
+                                    checked={this.state.active === false}
                                     name="Active"
-                                    value="true"
+                                    value="false"
+                                    label="No"
                                     type="radio"
                                     onChange={this.handleChangeActive}
                                 />
